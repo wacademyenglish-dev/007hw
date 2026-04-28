@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROJECT 007: LICENCE TO SPEAK | B1 Homework</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mi6: { gold: '#d4af37', lightgold: '#f3e5ab', dark: '#070707', red: '#cc0000', blue: '#002244' }
+                    },
+                    fontFamily: { title: ['Playfair Display', 'serif'], tech: ['Share Tech Mono', 'monospace'], body: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            background-color: #070707; color: #f0f0f0; 
+            overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile */
+        }
+        
+        #app-bg {
+            position: fixed; inset: 0; z-index: -2;
+            background: radial-gradient(circle at center, #111111 0%, #000000 100%);
+        }
+
+        .gun-barrel-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background: repeating-radial-gradient(circle at center, transparent 0, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 42px);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .glass {
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9);
+        }
+
+        .text-glow-gold { text-shadow: 0 0 15px rgba(212, 175, 55, 0.8); }
+        .text-glow-red { text-shadow: 0 0 15px rgba(204, 0, 0, 0.8); }
+
+        /* Mobile Animations */
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-100%); opacity: 0; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        @keyframes bullet { 0% { width: 0; opacity: 1; } 100% { width: 200%; opacity: 0; transform: translateX(100%); } }
+        
+        .screen { display: none; width: 100%; height: 100vh; flex-direction: column; }
+        .screen.active { display: flex; animation: slideIn 0.3s ease forwards; }
+        .screen.exit { animation: slideOut 0.3s ease forwards; }
+
+        .shake-fx { animation: shake 0.3s ease; }
+        .bullet-fx { position: fixed; top: 50%; left: -50%; height: 2px; background: #d4af37; z-index: 100; animation: bullet 0.4s ease-out forwards; pointer-events: none; box-shadow: 0 0 10px #d4af37; }
+        
+        /* Touch adjustments */
+        .option-btn { 
+            transition: all 0.2s; 
+            touch-action: manipulation;
+        }
+        .option-btn:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="font-body antialiased h-[100dvh] w-full overflow-hidden">
+
+    <div id="app-bg"></div>
+    <div class="gun-barrel-bg"></div>
+
+    <!-- SCREEN 1: START -->
+    <div id="screen-start" class="screen active justify-center items-center p-6 text-center relative">
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1588612140645-31ce145d4e13?q=80&w=800')] bg-cover bg-center opacity-30 z-[-1] grayscale"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black z-[-1]"></div>
+        
+        <i class="fa-solid fa-user-secret text-6xl text-mi6-gold mb-6 text-glow-gold animate-pulse"></i>
+        <h2 class="font-tech text-gray-400 tracking-[0.4em] mb-2 uppercase text-xs">MI6 Homework Protocol</h2>
+        <h1 class="font-title text-5xl text-white mb-4 leading-tight tracking-widest drop-shadow-lg">PROJECT<br><span class="text-6xl text-mi6-gold text-glow-gold">007</span></h1>
+        
+        <div class="glass p-5 rounded-lg mb-10 w-full max-w-sm border-t-2 border-mi6-gold">
+            <p class="font-tech text-lg text-gray-300">Complete the 15 classified tasks to prove your stealth and unlock the target intel.</p>
+            <p class="font-tech text-sm text-mi6-gold mt-4 tracking-widest uppercase"><i class="fa-solid fa-lock mr-2"></i>Target: Modals (B1)</p>
+        </div>
+
+        <button onclick="startHomework()" class="w-full max-w-sm bg-transparent border border-mi6-gold text-mi6-gold hover:bg-mi6-gold/20 font-tech text-xl py-4 rounded shadow-[0_0_15px_rgba(212,175,55,0.2)] active:scale-95 transition-all tracking-widest">
+            ACCEPT MISSION
+        </button>
+    </div>
+
+    <!-- SCREEN 2: EXERCISES (QUIZ) -->
+    <div id="screen-quiz" class="screen">
+        <!-- Header / Progress Bar -->
+        <header class="glass p-4 flex flex-col items-center border-b border-mi6-gold/30 z-10">
+            <div class="w-full flex justify-between items-center mb-3 font-tech text-sm tracking-widest">
+                <span class="text-white" id="progress-text">TASK 1/15</span>
+                <span class="text-gray-400">INTEL: <span id="score-text" class="text-mi6-gold font-bold">0</span></span>
+            </div>
+            <div class="w-full h-2 bg-gray-900 rounded-full overflow-hidden border border-gray-700">
+                <div id="progress-bar" class="h-full bg-mi6-gold transition-all duration-300 w-[0%] shadow-[0_0_10px_#d4af37]"></div>
+            </div>
+        </header>
+
+        <!-- Question Area -->
+        <main class="flex-1 flex flex-col justify-center items-center p-6 w-full max-w-md mx-auto relative">
+            <div id="feedback-icon" class="absolute top-5 text-8xl opacity-0 transition-opacity z-0"></div>
+            
+            <div class="w-full relative z-10">
+                <h3 class="font-tech text-mi6-gold text-sm mb-4 uppercase tracking-[0.2em]" id="q-category">Category</h3>
+                <h2 class="font-body text-2xl md:text-3xl text-white mb-10 leading-relaxed font-light" id="q-text">
+                    Question text goes here?
+                </h2>
+                
+                <div id="options-container" class="flex flex-col gap-4 w-full font-body">
+                    <!-- Options injected via JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCREEN 3: RESULT AND TRAILER -->
+    <div id="screen-end" class="screen overflow-y-auto pb-10">
+        <div class="p-6 max-w-md mx-auto w-full flex flex-col items-center pt-10">
+            <i class="fa-solid fa-shield-halved text-7xl text-mi6-gold mb-6 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]"></i>
+            <h1 class="font-title text-4xl text-white mb-2 text-center tracking-widest uppercase">MISSION OVER</h1>
+            
+            <div class="glass w-full p-6 rounded-lg text-center mb-8 border-t-4 border-mi6-gold">
+                <p class="font-tech text-sm text-gray-400 mb-2 uppercase tracking-widest">TOTAL INTEL</p>
+                <p class="font-title text-6xl text-mi6-gold text-glow-gold mb-2" id="final-score">15/15</p>
+                <p class="font-tech text-lg text-gray-300 mt-4" id="final-message">You are a true 00-Agent.</p>
+            </div>
+
+            <!-- Trailer Section -->
+            <div class="w-full text-center mb-4 mt-4">
+                <div class="inline-block bg-white/10 text-white border border-gray-500 px-4 py-1 rounded font-tech tracking-widest text-xs mb-4 uppercase">
+                    <i class="fa-solid fa-video mr-2 text-mi6-gold"></i>Classified Footage
+                </div>
+                <h3 class="font-body text-lg text-gray-300 mb-4">Watch the Project 007 Teaser:</h3>
+            </div>
+            
+            <!-- Video Wrapper (16:9 Aspect Ratio) -->
+            <div class="w-full aspect-video rounded overflow-hidden border border-gray-700 shadow-[0_0_30px_rgba(0,0,0,0.8)] bg-black mb-10 relative">
+                <iframe id="trailer-video" class="absolute top-0 left-0 w-full h-full" src="" title="Project 007 Trailer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+
+            <button onclick="location.reload()" class="w-full glass border border-gray-600 text-white font-tech text-lg py-4 rounded active:bg-white/10 transition-colors tracking-widest uppercase">
+                <i class="fa-solid fa-rotate-right mr-2"></i> RETRY MISSION
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA: 15 Exercises (Modals B1: Must, Have to, Mustn't, Don't have to) ---
+        const exercises = [
+            // Obligation (Must / Have to)
+            { cat: "Obligation (Rules)", text: "You _______ wear a tuxedo to the casino tonight. It's a strict rule.", options: ["have to", "mustn't", "don't have to"], answer: 0 },
+            { cat: "Obligation (Personal)", text: "I _______ stop the villain before he launches the missile!", options: ["must", "have to", "mustn't"], answer: 0 },
+            { cat: "Obligation (Rules)", text: "All MI6 agents _______ report to headquarters every morning.", options: ["have to", "must", "don't have to"], answer: 0 },
+            { cat: "Obligation (Personal)", text: "We _______ find the password. It's our only hope.", options: ["must", "don't have to", "mustn't"], answer: 0 },
+            
+            // Prohibition (Mustn't)
+            { cat: "Prohibition", text: "You _______ touch that red button. It will explode!", options: ["mustn't", "don't have to", "have to"], answer: 0 },
+            { cat: "Prohibition", text: "We _______ tell anyone our real names. It's too dangerous.", options: ["mustn't", "don't have to", "must"], answer: 0 },
+            { cat: "Prohibition", text: "A good spy _______ leave any evidence behind.", options: ["mustn't", "doesn't have to", "has to"], answer: 0 },
+            { cat: "Prohibition", text: "She _______ be late for the meeting with M. It's very important.", options: ["mustn't", "doesn't have to", "must"], answer: 0 },
+            
+            // Lack of Obligation (Don't have to)
+            { cat: "Lack of Obligation", text: "You _______ use the laser watch today, but you can if you want.", options: ["don't have to", "mustn't", "have to"], answer: 0 },
+            { cat: "Lack of Obligation", text: "He _______ drive the Aston Martin, he can take the train.", options: ["doesn't have to", "mustn't", "has to"], answer: 0 },
+            { cat: "Lack of Obligation", text: "We _______ infiltrate the base tonight; we have time until tomorrow.", options: ["don't have to", "mustn't", "must"], answer: 0 },
+            { cat: "Lack of Obligation", text: "You _______ wear a tie, the party is casual.", options: ["don't have to", "mustn't", "must"], answer: 0 },
+            
+            // Mixed & Interrogative
+            { cat: "Interrogative", text: "Does James _______ go on this dangerous mission?", options: ["have to", "must", "has to"], answer: 0 },
+            { cat: "Mixed Protocol", text: "I _______ forget to charge my gadgets before I leave.", options: ["mustn't", "don't have to", "have to"], answer: 0 },
+            { cat: "Mixed Protocol", text: "A 00-Agent _______ be ready for anything.", options: ["has to", "mustn't", "doesn't have to"], answer: 0 }
+        ];
+
+        // --- STATE ---
+        let currentIndex = 0;
+        let score = 0;
+        let isLocked = false;
+
+        // --- DOM ELEMENTS ---
+        const screenStart = document.getElementById('screen-start');
+        const screenQuiz = document.getElementById('screen-quiz');
+        const screenEnd = document.getElementById('screen-end');
+        
+        const qCategory = document.getElementById('q-category');
+        const qText = document.getElementById('q-text');
+        const optionsContainer = document.getElementById('options-container');
+        const progressText = document.getElementById('progress-text');
+        const progressBar = document.getElementById('progress-bar');
+        const scoreText = document.getElementById('score-text');
+        const feedbackIcon = document.getElementById('feedback-icon');
+
+        // --- LOGIC ---
+        function startHomework() {
+            screenStart.classList.replace('active', 'exit');
+            setTimeout(() => {
+                screenStart.classList.remove('exit');
+                screenStart.style.display = 'none';
+                screenQuiz.classList.add('active');
+                loadQuestion();
+            }, 300);
+        }
+
+        function loadQuestion() {
+            isLocked = false;
+            feedbackIcon.style.opacity = '0';
+            
+            // Shuffle options for variation, but keep track of correct answer
+            const q = exercises[currentIndex];
+            const optionsWithIndex = q.options.map((opt, i) => ({ text: opt, isCorrect: i === q.answer }));
+            // Simple shuffle
+            optionsWithIndex.sort(() => Math.random() - 0.5);
+
+            qCategory.innerText = q.cat;
+            
+            // Highlight the blank space with MI6 Gold
+            qText.innerHTML = q.text.replace('_______', '<span class="border-b-2 border-mi6-gold text-mi6-gold w-16 inline-block text-center relative top-1"></span>');
+            
+            // Update UI
+            progressText.innerText = `TASK ${currentIndex + 1}/${exercises.length}`;
+            progressBar.style.width = `${((currentIndex) / exercises.length) * 100}%`;
+            scoreText.innerText = score;
+
+            // Render Options
+            optionsContainer.innerHTML = '';
+            optionsWithIndex.forEach((optData, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn glass w-full text-left p-6 rounded text-lg border border-gray-600 text-gray-200 active:bg-white/10 tracking-wide';
+                btn.innerHTML = `<span class="font-tech text-mi6-gold mr-4 font-bold">${String.fromCharCode(65 + idx)}.</span> ${optData.text}`;
+                btn.onclick = () => checkAnswer(btn, optData.isCorrect, optData.text, optionsWithIndex);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function createBulletEffect() {
+            const fx = document.createElement('div');
+            fx.className = 'bullet-fx';
+            fx.style.top = Math.random() * 60 + 20 + '%';
+            document.body.appendChild(fx);
+            setTimeout(() => fx.remove(), 400);
+        }
+
+        function checkAnswer(btn, isCorrect, textStr, optionsArray) {
+            if (isLocked) return;
+            isLocked = true;
+            
+            // Fill the blank with the chosen answer
+            qText.innerHTML = qText.innerHTML.replace(/<span.*<\/span>/, `<span class="text-${isCorrect ? 'white' : 'mi6-red'} font-bold px-2">${textStr}</span>`);
+
+            if (isCorrect) {
+                score++;
+                scoreText.innerText = score;
+                btn.classList.add('bg-white/20', 'border-white', 'text-white');
+                btn.classList.remove('text-gray-200');
+                
+                createBulletEffect(); // MI6 shooting effect
+                
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-check text-green-500 drop-shadow-[0_0_20px_rgba(34,197,94,0.8)]"></i>';
+            } else {
+                btn.classList.add('bg-mi6-red/30', 'border-mi6-red', 'text-white');
+                btn.classList.remove('text-gray-200');
+                optionsContainer.classList.add('shake-fx');
+                
+                // Find and highlight the correct answer in green
+                const correctIdx = optionsArray.findIndex(o => o.isCorrect);
+                const correctBtn = optionsContainer.children[correctIdx];
+                correctBtn.classList.add('border-green-500', 'text-green-500');
+                
+                feedbackIcon.innerHTML = '<i class="fa-solid fa-xmark text-mi6-red drop-shadow-[0_0_20px_rgba(204,0,0,0.8)]"></i>';
+                
+                setTimeout(() => optionsContainer.classList.remove('shake-fx'), 300);
+            }
+
+            feedbackIcon.style.opacity = '1';
+
+            // Advance to the next question
+            setTimeout(() => {
+                currentIndex++;
+                if (currentIndex < exercises.length) {
+                    loadQuestion();
+                } else {
+                    finishHomework();
+                }
+            }, 1800);
+        }
+
+        function finishHomework() {
+            progressBar.style.width = '100%';
+            
+            screenQuiz.classList.replace('active', 'exit');
+            setTimeout(() => {
+                screenQuiz.classList.remove('exit');
+                screenQuiz.style.display = 'none';
+                screenEnd.classList.add('active');
+                
+                document.getElementById('final-score').innerText = `${score}/${exercises.length}`;
+                const msg = document.getElementById('final-message');
+                if (score === 15) {
+                    msg.innerText = "Flawless! A true 00-Agent.";
+                    msg.className = "font-tech text-lg text-green-400 mt-2 tracking-widest uppercase";
+                } else if (score >= 10) {
+                    msg.innerText = "Good job. You survived the mission.";
+                    msg.className = "font-tech text-lg text-mi6-gold mt-2 tracking-widest uppercase";
+                } else {
+                    msg.innerText = "Agent compromised. Train harder.";
+                    msg.className = "font-tech text-lg text-mi6-red mt-2 tracking-widest uppercase";
+                }
+
+                // Inject the video iframe only at the end
+                document.getElementById('trailer-video').src = "https://www.youtube.com/embed/vwmq_k5Kto0";
+                
+            }, 300);
+        }
+    </script>
+</body>
+</html>
